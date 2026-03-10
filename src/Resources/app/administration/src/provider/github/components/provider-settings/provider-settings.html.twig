@@ -1,0 +1,16 @@
+{% block heptacom_admin_open_auth_provider_github_settings %}
+    <mt-card position-identifier="heptacom-admin-open-auth-provider-github-settings">
+        <mt-text-field
+            :label="$t('heptacomAdminOpenAuthClient.providerFields.github.clientId')"
+            v-model="item.config.clientId"
+        ></mt-text-field>
+        <mt-password-field
+            :label="$t('heptacomAdminOpenAuthClient.providerFields.github.clientSecret')"
+            v-model="item.config.clientSecret"
+        ></mt-password-field>
+        <sw-tagged-field
+            :label="$t('heptacomAdminOpenAuthClient.providerFields.github.additionalScopes')"
+            v-model:value="item.config.scopes"
+        ></sw-tagged-field>
+    </mt-card>
+{% endblock %}

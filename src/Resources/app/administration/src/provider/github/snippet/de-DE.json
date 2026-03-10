@@ -1,0 +1,18 @@
+{
+    "heptacomAdminOpenAuthClient": {
+        "providerFields": {
+            "github": {
+                "additionalScopes": "Anwendungsberechtigungen",
+                "clientId": "Client-ID",
+                "clientSecret": "Client-Geheimnis"
+            }
+        },
+        "providers": {
+            "github": {
+                "helpUrl": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+                "label": "GitHub",
+                "logoFile": "github_logo.svg"
+            }
+        }
+    }
+}

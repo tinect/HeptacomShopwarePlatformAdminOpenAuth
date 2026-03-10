@@ -7,6 +7,9 @@ const { Application, Component } = Shopware;
 // Cidaas
 Component.register('heptacom-admin-open-auth-provider-cidaas-settings', () => import ('./cidaas/components/provider-settings'));
 
+// GitHub
+Component.register('heptacom-admin-open-auth-provider-github-settings', () => import ('./github/components/provider-settings'));
+
 // Google Cloud
 Component.register('heptacom-admin-open-auth-provider-google-cloud-settings', () => import ('./google_cloud/components/provider-settings'));
 

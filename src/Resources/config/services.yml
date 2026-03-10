@@ -96,6 +96,11 @@ services:
         arguments:
             - '@Heptacom\AdminOpenAuth\Service\Provider\CidaasClientEntityWriter.inner'
 
+    Heptacom\AdminOpenAuth\Service\Provider\GitHubClientEntityWriter:
+        decorates: Shopware\Core\Framework\DataAbstractionLayer\Write\EntityWriter
+        arguments:
+            - '@Heptacom\AdminOpenAuth\Service\Provider\GitHubClientEntityWriter.inner'
+
     Heptacom\AdminOpenAuth\Service\Provider\GoogleCloudClientEntityWriter:
         decorates: Shopware\Core\Framework\DataAbstractionLayer\Write\EntityWriter
         arguments:
