@@ -56,7 +56,17 @@
                                 <sw-container columns="1fr auto">
                                     {% block sw_profile_index_admin_open_auth_clients_cards_item_provider %}
                                         <div>
-                                            {{ client.name }}
+                                            <template v-if="acl.can('heptacom_admin_open_auth_client.editor')">
+                                                <router-link
+                                                    :to="{ name: 'heptacom.admin.open.auth.client.edit', params: { id: client.id } }"
+                                                    type="internal"
+                                                    variant="primary">
+                                                    {{ client.name }}
+                                                </router-link>
+                                            </template>
+                                            <template v-else>
+                                                {{ client.name }}
+                                            </template>
                                         </div>
                                     {% endblock %}
 
@@ -99,7 +109,7 @@
         {% endblock %}
     </mt-card>
 {% endblock %}
-`});var M={};a(M,{default:()=>Ot});var f,Ot,L=o(()=>{U();({Context:f}=Shopware),Ot={template:q,inject:["repositoryFactory"],props:{userId:{type:String,required:!1,default:null},isUserLoading:{type:Boolean,required:!1,default:!1}},data(){return{heptacomAdminOpenAuthLoading:!0,heptacomAdminOpenAuthClients:[]}},computed:{heptacomAdminOpenAuthClientsRepository(){return this.repositoryFactory.create("heptacom_admin_open_auth_client")},heptacomAdminOpenAuthHttpClient(){return this.heptacomAdminOpenAuthClientsRepository.httpClient},isMe(){return Shopware.Store.get("session").currentUser.id===this.userId}},watch:{isUserLoading:{handler(){this.loadHeptacomAdminOpenAuth().then()}}},created(){this.loadHeptacomAdminOpenAuth().then()},methods:{async loadHeptacomAdminOpenAuth(){if(this.isUserLoading||this.userId===null)return;this.heptacomAdminOpenAuthLoading=!0,this.heptacomAdminOpenAuthClients=[];let e=this.heptacomAdminOpenAuthClientsRepository.buildHeaders(f.api),t=await this.heptacomAdminOpenAuthHttpClient.get("/_admin/open-auth/client/list",{headers:e,params:{userId:this.userId}});this.heptacomAdminOpenAuthClients=t.data.data,this.heptacomAdminOpenAuthLoading=!1},async redirectToLoginMask(e){let t=window.location.pathname+window.location.search+window.location.hash,i=this.heptacomAdminOpenAuthClientsRepository.buildHeaders(f.api),n=await this.heptacomAdminOpenAuthHttpClient.post(`/_action/open-auth/${e}/connect?redirectTo=${encodeURIComponent(t)}`,{},{headers:i});window.location.href=n.data.target},async revokeHeptacomAdminOpenAuthUserKey(e){let t=this.heptacomAdminOpenAuthClientsRepository.buildHeaders(f.api);await this.heptacomAdminOpenAuthHttpClient.post(`/_action/open-auth/${e}/disconnect`,{},{headers:t}),await this.loadHeptacomAdminOpenAuth()}}}});var E,j=o(()=>{E=`{% block heptacom_admin_open_auth_role_assignment_action_config %}
+`});var M={};a(M,{default:()=>Ot});var f,Ot,L=o(()=>{U();({Context:f}=Shopware),Ot={template:q,inject:["acl","repositoryFactory"],props:{userId:{type:String,required:!1,default:null},isUserLoading:{type:Boolean,required:!1,default:!1}},data(){return{heptacomAdminOpenAuthLoading:!0,heptacomAdminOpenAuthClients:[]}},computed:{heptacomAdminOpenAuthClientsRepository(){return this.repositoryFactory.create("heptacom_admin_open_auth_client")},heptacomAdminOpenAuthHttpClient(){return this.heptacomAdminOpenAuthClientsRepository.httpClient},isMe(){return Shopware.Store.get("session").currentUser.id===this.userId}},watch:{isUserLoading:{handler(){this.loadHeptacomAdminOpenAuth().then()}}},created(){this.loadHeptacomAdminOpenAuth().then()},methods:{async loadHeptacomAdminOpenAuth(){if(this.isUserLoading||this.userId===null)return;this.heptacomAdminOpenAuthLoading=!0,this.heptacomAdminOpenAuthClients=[];let e=this.heptacomAdminOpenAuthClientsRepository.buildHeaders(f.api),t=await this.heptacomAdminOpenAuthHttpClient.get("/_admin/open-auth/client/list",{headers:e,params:{userId:this.userId}});this.heptacomAdminOpenAuthClients=t.data.data,this.heptacomAdminOpenAuthLoading=!1},async redirectToLoginMask(e){let t=window.location.pathname+window.location.search+window.location.hash,i=this.heptacomAdminOpenAuthClientsRepository.buildHeaders(f.api),n=await this.heptacomAdminOpenAuthHttpClient.post(`/_action/open-auth/${e}/connect?redirectTo=${encodeURIComponent(t)}`,{},{headers:i});window.location.href=n.data.target},async revokeHeptacomAdminOpenAuthUserKey(e){let t=this.heptacomAdminOpenAuthClientsRepository.buildHeaders(f.api);await this.heptacomAdminOpenAuthHttpClient.post(`/_action/open-auth/${e}/disconnect`,{},{headers:t}),await this.loadHeptacomAdminOpenAuth()}}}});var E,j=o(()=>{E=`{% block heptacom_admin_open_auth_role_assignment_action_config %}
     <mt-switch
         :label="$t('heptacom-admin-open-auth-client.actions.heptacomAdminOpenAuthRoleAssignment.userBecomeAdmin')"
         v-model="rule.actionConfig.userBecomeAdmin"
