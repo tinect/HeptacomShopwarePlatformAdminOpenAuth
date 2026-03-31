@@ -68,6 +68,13 @@ class OpenIdConnectService
             $user = new OpenIdConnectUser();
             $user->assign($json);
 
+            $userPicture = $user->getPicture();
+            if ($userPicture !== null) {
+                if (\str_starts_with($userPicture, 'https://')) {
+                    $user->setPicture(\base64_encode($this->getPicture($userPicture, $token)));
+                }
+            }
+
             return $user;
         } catch (ClientExceptionInterface $e) {
             $message = \sprintf('Could not retrieve user info: %s', $e->getMessage());
@@ -75,6 +82,17 @@ class OpenIdConnectService
 
             throw new OpenIdConnectException($message);
         }
+    }
+
+    private function getPicture(string $uri, OpenIdConnectToken $token): string
+    {
+        $uri = new Uri($uri);
+        $request = OpenIdConnectRequestHelper::prepareRequest(new Request('GET', $uri), $token);
+        $response = $this->oidcHttpClient->sendRequest($request);
+
+        OpenIdConnectRequestHelper::verifyRequestSuccess($request, $response, 'image/');
+
+        return $response->getBody()->getContents();
     }
 
     public function getAccessToken(string $grantType, array $options = []): OpenIdConnectToken
