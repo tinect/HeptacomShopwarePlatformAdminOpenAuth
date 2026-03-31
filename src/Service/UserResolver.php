@@ -16,6 +16,8 @@ use Heptacom\AdminOpenAuth\Contract\UserKeyInterface;
 use Heptacom\AdminOpenAuth\Contract\UserResolverInterface;
 use Heptacom\AdminOpenAuth\Contract\UserTokenInterface;
 use Heptacom\AdminOpenAuth\Exception\UserMismatchException;
+use Shopware\Core\Content\Media\Upload\MediaUploadParameters;
+use Shopware\Core\Content\Media\Upload\MediaUploadService;
 use Shopware\Core\Defaults;
 use Shopware\Core\Framework\Api\Acl\Role\AclUserRoleDefinition;
 use Shopware\Core\Framework\Context;
@@ -24,6 +26,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
+use Shopware\Core\Framework\Util\Hasher;
 use Shopware\Core\Framework\Util\Random;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\Maintenance\User\Service\UserProvisioner;
@@ -47,7 +50,8 @@ final readonly class UserResolver implements UserResolverInterface
         private UserEmailInterface $userEmail,
         private UserKeyInterface $userKey,
         private UserTokenInterface $userToken,
-        private ClientFeatureCheckerInterface $clientFeatureChecker
+        private ClientFeatureCheckerInterface $clientFeatureChecker,
+        private MediaUploadService $mediaUploadService
     ) {
     }
 
@@ -167,6 +171,7 @@ final readonly class UserResolver implements UserResolverInterface
             $userChangeSet['last_name'] = $user->lastName;
         }
 
+        $userChangeSet['avatar_id'] = $this->getAvatarId($user->picture, $context);
         $userChangeSet['email'] = $user->primaryEmail;
         $userChangeSet['time_zone'] = $user->timezone;
         $userChangeSet['locale_id'] = $this->findLocaleId($user->locale ?? '', $context);
@@ -286,5 +291,46 @@ final readonly class UserResolver implements UserResolverInterface
                 );
             }
         }
+    }
+
+    private function getAvatarId(?string $picture, Context $context): ?string
+    {
+        if ($picture === null) {
+            return null;
+        }
+
+        $avatarId = Hasher::hash($picture, 'xxh128');
+        $binAvatarId = Uuid::fromHexToBytes($avatarId);
+
+        $mediaExists = $this->connection->fetchOne(
+                'SELECT id FROM media WHERE id = :id',
+                ['id' => $binAvatarId]
+            ) !== false;
+
+        if ($mediaExists) {
+            return $avatarId;
+        }
+
+        $imageData = \base64_decode($picture);
+        if ($imageData !== false && $imageData !== '') {
+            $tempFile = \tempnam(\sys_get_temp_dir(), 'avatar_');
+            if ($tempFile !== false) {
+                \file_put_contents($tempFile, $imageData);
+                try {
+                    $this->mediaUploadService->uploadFromLocalPath(
+                        $tempFile,
+                        $context,
+                        new MediaUploadParameters(id: $avatarId, fileName: $avatarId . '.jpg')
+                    );
+                } catch (\Throwable) {
+                    // import failed, skip avatar assignment
+                    return null;
+                } finally {
+                    \unlink($tempFile);
+                }
+            }
+        }
+
+        return $avatarId;
     }
 }
