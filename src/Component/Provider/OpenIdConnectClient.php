@@ -65,6 +65,7 @@ final class OpenIdConnectClient extends ClientContract
         $result->firstName = $user->getGivenName() ?? '';
         $result->lastName = $user->getFamilyName() ?? '';
         $result->displayName = $name;
+        $result->picture = $user->getPicture();
         $result->primaryEmail = $user->getEmail();
         $result->emails = [$user->getEmail()];
         $result->timezone = $user->getZoneinfo();
