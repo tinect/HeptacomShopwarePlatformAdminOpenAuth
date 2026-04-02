@@ -70,6 +70,8 @@ class OpenIdConnectService
 
             $userPicture = $user->getPicture();
             if ($userPicture !== null) {
+                $user->setPicture(null);
+
                 if (\str_starts_with($userPicture, 'https://')) {
                     try {
                         $user->setPicture(\base64_encode($this->getPicture($userPicture, $token)));
