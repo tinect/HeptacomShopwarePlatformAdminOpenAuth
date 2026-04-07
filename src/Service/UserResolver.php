@@ -9,6 +9,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
 use Heptacom\AdminOpenAuth\Contract\ClientFeatureCheckerInterface;
 use Heptacom\AdminOpenAuth\Contract\LoginInterface;
+use Heptacom\AdminOpenAuth\Contract\Picture;
 use Heptacom\AdminOpenAuth\Contract\RoleAssignment;
 use Heptacom\AdminOpenAuth\Contract\User;
 use Heptacom\AdminOpenAuth\Contract\UserEmailInterface;
@@ -293,13 +294,13 @@ final readonly class UserResolver implements UserResolverInterface
         }
     }
 
-    private function getAvatarId(?string $picture, Context $context): ?string
+    private function getAvatarId(?Picture $picture, Context $context): ?string
     {
         if ($picture === null) {
             return null;
         }
 
-        $avatarId = Hasher::hash($picture, 'xxh128');
+        $avatarId = $picture->getId();
         $binAvatarId = Uuid::fromHexToBytes($avatarId);
 
         $mediaExists = $this->connection->fetchOne(
@@ -311,8 +312,8 @@ final readonly class UserResolver implements UserResolverInterface
             return $avatarId;
         }
 
-        $imageData = \base64_decode($picture);
-        if ($imageData !== false && $imageData !== '') {
+        $imageData = $picture->getContent();
+        if ($imageData !== '') {
             $tempFile = \tempnam(\sys_get_temp_dir(), 'avatar_');
             if ($tempFile !== false) {
                 \file_put_contents($tempFile, $imageData);
@@ -320,7 +321,10 @@ final readonly class UserResolver implements UserResolverInterface
                     $this->mediaUploadService->uploadFromLocalPath(
                         $tempFile,
                         $context,
-                        new MediaUploadParameters(id: $avatarId, fileName: $avatarId . '.jpg')
+                        new MediaUploadParameters(
+                            id: $avatarId,
+                            fileName: $avatarId . '.' . $picture->fileExtension
+                        )
                     );
                 } catch (\Throwable) {
                     // import failed, skip avatar assignment
