@@ -323,7 +323,7 @@ final readonly class UserResolver implements UserResolverInterface
                         $context,
                         new MediaUploadParameters(
                             id: $avatarId,
-                            fileName: $avatarId . '.' . $picture->fileExtension
+                            fileName: 'avatar_' . $avatarId . '.' . $picture->fileExtension
                         )
                     );
                 } catch (\Throwable) {
