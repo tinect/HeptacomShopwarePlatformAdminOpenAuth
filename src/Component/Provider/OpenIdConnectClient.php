@@ -67,7 +67,7 @@ final class OpenIdConnectClient extends ClientContract
         $result->displayName = $name;
 
         if ($this->openIdConnectService->getConfig()->isFetchPicture()) {
-            $result->picture = $user->getPicture();
+            $result->picture = $this->getInnerClient()->getUserPicture($user->getPicture(), $token);
         }
 
         $result->primaryEmail = $user->getEmail();
