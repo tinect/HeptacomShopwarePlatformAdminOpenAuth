@@ -74,7 +74,7 @@ class OpenIdConnectService
 
                 if (\str_starts_with($userPicture, 'https://')) {
                     try {
-                        $user->setPicture(\base64_encode($this->getPicture($userPicture, $token)));
+                        $user->setPicture(\base64_encode($this->fetchPicture($userPicture, $token)));
                     } catch (ClientExceptionInterface) {
                         // we don't care about errors. E.g. Microsoft is showing URI, but there might be no picture.
                     }
@@ -93,7 +93,7 @@ class OpenIdConnectService
     /**
      * @throws ClientExceptionInterface
      */
-    private function getPicture(string $uri, OpenIdConnectToken $token): string
+    private function fetchPicture(string $uri, OpenIdConnectToken $token): string
     {
         $uri = new Uri($uri);
         $request = OpenIdConnectRequestHelper::prepareRequest(new Request('GET', $uri), $token);
