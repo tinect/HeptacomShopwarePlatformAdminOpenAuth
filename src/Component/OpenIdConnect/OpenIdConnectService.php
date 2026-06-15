@@ -107,8 +107,9 @@ class OpenIdConnectService
             $picture->setContent($response->getBody()->getContents());
 
             return $picture;
-        } catch (ClientExceptionInterface) {
+        } catch (ClientExceptionInterface $e) {
             // we don't care about errors. E.g. Microsoft is showing URI, but there might be no picture.
+            $this->logger->debug('Could not retrieve user picture.', $e->getTrace());
         }
 
         return null;
