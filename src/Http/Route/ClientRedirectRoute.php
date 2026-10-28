@@ -17,6 +17,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Struct\ArrayStruct;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -61,6 +62,7 @@ final class ClientRedirectRoute extends AbstractController
         $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 
         $clientCriteria = new Criteria([$clientId]);
+        $clientCriteria->addFilter(new EqualsFilter('active', true));
         $clientCriteria->getAssociation('rules')->addSorting(new FieldSorting('position', FieldSorting::ASCENDING));
 
         /** @var ClientEntity|null $client */
@@ -80,7 +82,8 @@ final class ClientRedirectRoute extends AbstractController
         $requestState = (string) ($requestStateExtension?->offsetGet('requestState') ?? '');
         $login = $this->stateResolver->getLogin($requestState, $context);
 
-        if ($login === null) {
+        // the state must have been issued for this client, otherwise feature checks of another client could be bypassed
+        if ($login === null || $login->clientId !== $clientId) {
             throw new RedirectReceiveInvalidStateException($requestState);
         }
 

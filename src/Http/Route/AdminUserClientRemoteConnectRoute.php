@@ -42,8 +42,8 @@ final class AdminUserClientRemoteConnectRoute extends AbstractController
         $adminApiSource = $context->getSource();
         $systemContext = $context->scope(Context::SYSTEM_SCOPE, static fn (Context $context): Context => $context);
         $state = $this->connectStateFactory->create($clientId, $adminApiSource->getUserId(), $redirectTo, $systemContext);
-        $redirectBehaviour = $this->redirectBehaviourFactory->createRedirectBehaviour($clientId, $context);
-        $target = $this->clientLoader->load($clientId, $context)->getLoginUrl($state, $redirectBehaviour);
+        $redirectBehaviour = $this->redirectBehaviourFactory->createRedirectBehaviour($clientId, $systemContext);
+        $target = $this->clientLoader->load($clientId, $systemContext)->getLoginUrl($state, $redirectBehaviour);
 
         return new JsonResponse([
             'target' => $target,

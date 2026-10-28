@@ -6,7 +6,7 @@ Component.override('sw-profile-index-general', {
     template,
 
     inject: [
-        'systemConfigApiService',
+        'repositoryFactory',
         'loginService'
     ],
 
@@ -18,9 +18,14 @@ Component.override('sw-profile-index-general', {
     },
 
     created() {
-        this.systemConfigApiService.getValues('KskHeptacomAdminOpenAuth.config').then((response) => {
-            this.denyPasswordLogin = response['KskHeptacomAdminOpenAuth.config.denyPasswordLogin'];
-        });
+        const clientRepository = this.repositoryFactory.create('heptacom_admin_open_auth_client');
+        const headers = clientRepository.buildHeaders(Shopware.Context.api);
+
+        clientRepository.httpClient
+            .get('/_admin/open-auth/config', { headers })
+            .then((response) => {
+                this.denyPasswordLogin = response.data.denyPasswordLogin;
+            });
 
         this.userId = Shopware.Store.get('session')?.currentUser.id;
     },

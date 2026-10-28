@@ -33,13 +33,14 @@ final class AdminUserClientListRoute extends AbstractController
     )]
     public function clientList(Request $request, Context $context): Response
     {
+        /** @var AdminApiSource $adminApiSource */
+        $adminApiSource = $context->getSource();
         $userId = $request->query->getString('userId');
 
-        if ($userId === '') {
-            /** @var AdminApiSource $adminApiSource */
-            $adminApiSource = $context->getSource();
-
+        if ($userId === '' || $userId === $adminApiSource->getUserId()) {
+            // the own connections are always visible, other users' connections stay protected by ACL
             $userId = $adminApiSource->getUserId();
+            $context = $context->scope(Context::SYSTEM_SCOPE, static fn (Context $context): Context => $context);
         }
 
         $criteria = new Criteria();
