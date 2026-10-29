@@ -40,8 +40,10 @@ final class ClientRemoteLoginRoute extends AbstractController
     ): Response {
         $redirectTo = RedirectTargetValidator::assertSameOrigin((string) $request->query->get('redirectTo') ?: null);
 
-        $systemContext = $context->scope(Context::SYSTEM_SCOPE, static fn (Context $context): Context => $context);
-        $state = $this->loginStateFactory->create($clientId, $redirectTo, $systemContext);
+        $state = $context->scope(
+            Context::SYSTEM_SCOPE,
+            fn (Context $systemContext): string => $this->loginStateFactory->create($clientId, $redirectTo, $systemContext)
+        );
         $redirectBehaviour = $this->redirectBehaviourFactory->createRedirectBehaviour($clientId, $context);
         $target = $this->clientLoader->load($clientId, $context)->getLoginUrl($state, $redirectBehaviour);
 

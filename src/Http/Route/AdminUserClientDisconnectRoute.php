@@ -33,11 +33,9 @@ final class AdminUserClientDisconnectRoute extends AbstractController
         /** @var AdminApiSource $adminApiSource */
         $adminApiSource = $context->getSource();
 
-        $this->flow->disconnectClient(
-            $clientId,
-            $adminApiSource->getUserId(),
-            $context->scope(Context::SYSTEM_SCOPE, static fn (Context $context): Context => $context),
-        );
+        $context->scope(Context::SYSTEM_SCOPE, function (Context $systemContext) use ($clientId, $adminApiSource): void {
+            $this->flow->disconnectClient($clientId, $adminApiSource->getUserId(), $systemContext);
+        });
 
         return new JsonResponse();
     }

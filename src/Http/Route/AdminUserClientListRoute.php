@@ -8,6 +8,7 @@ use Heptacom\AdminOpenAuth\Contract\OpenAuthenticationFlowInterface;
 use Heptacom\AdminOpenAuth\Database\ClientEntity;
 use Shopware\Core\Framework\Api\Context\AdminApiSource;
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,11 +37,10 @@ final class AdminUserClientListRoute extends AbstractController
         /** @var AdminApiSource $adminApiSource */
         $adminApiSource = $context->getSource();
         $userId = $request->query->getString('userId');
+        $ownConnections = $userId === '' || $userId === $adminApiSource->getUserId();
 
-        if ($userId === '' || $userId === $adminApiSource->getUserId()) {
-            // the own connections are always visible, other users' connections stay protected by ACL
+        if ($ownConnections) {
             $userId = $adminApiSource->getUserId();
-            $context = $context->scope(Context::SYSTEM_SCOPE, static fn (Context $context): Context => $context);
         }
 
         $criteria = new Criteria();
@@ -49,7 +49,12 @@ final class AdminUserClientListRoute extends AbstractController
                 new EqualsFilter('userId', $userId)
             );
 
-        $clients = $this->flow->getAvailableClients($criteria, $context)
+        // the own connections are always visible, other users' connections stay protected by ACL
+        $clients = $ownConnections
+            ? $context->scope(Context::SYSTEM_SCOPE, fn (Context $systemContext): EntityCollection => $this->flow->getAvailableClients($criteria, $systemContext))
+            : $this->flow->getAvailableClients($criteria, $context);
+
+        $clients = $clients
             ->map(static fn (ClientEntity $client): array => [
                 'id' => $client->getId(),
                 'name' => $client->name,
